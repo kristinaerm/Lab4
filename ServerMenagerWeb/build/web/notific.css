@@ -1,0 +1,35 @@
+h2
+{
+    font-family: Verdana, Arial, Helvetica, sans-serif; 
+    font-size: 11pt;
+    position: absolute; /* ���������� ���������������� */
+    bottom: 300px; /* ��������� �� ������� ���� */
+    right: 500px;
+}
+h3{
+    position: absolute; /* ���������� ���������������� */
+    bottom: 500px; /* ��������� �� ������� ���� */
+    right: 600px;
+}
+h4{
+   position: absolute; /* ���������� ���������������� */
+    bottom: 530px; /* ��������� �� ������� ���� */
+    right: 830px;
+}
+h5{
+   position: absolute; /* ���������� ���������������� */
+    bottom: 500px; /* ��������� �� ������� ���� */
+    right: 830px;
+}
+body{
+   background:url(1.png);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, -50%)
+}
+input{
+}
+p{
+}
