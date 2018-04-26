@@ -20,14 +20,13 @@ public class User {
     private final String password;
     private TaskLog taskLog;
 
-    //убрать строку передачи айдишника!!!
     public User(String l, String p, LinkedList<Record> rec) {
         id = UUID.randomUUID().toString();
         login = l;
         password = p;
         taskLog = new TaskLog(rec);
     }
-    
+
     public User(String i, String l, String p, LinkedList<Record> rec) {
         id = i;
         login = l;

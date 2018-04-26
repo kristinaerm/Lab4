@@ -9,18 +9,13 @@ import exceptions.InvalidRecordFieldException;
 import interfaces.Loader;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.LinkedList;
-import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -43,7 +38,6 @@ import static model.Record.DATETIMEFORMATTER;
 public class LoaderXML implements Loader {
 
     public LoaderXML() {
-
     }
 
     @Override
@@ -108,7 +102,7 @@ public class LoaderXML implements Loader {
         String timedate1 = null;
         String contacts1 = null;
 
-        LinkedList<Record> list = new LinkedList<Record>();
+        LinkedList<Record> list = new LinkedList<>();
 
         NodeList nodeList = document.getElementsByTagName("user");
 
@@ -175,7 +169,8 @@ public class LoaderXML implements Loader {
 
     }
 
-    public User readDocument( String log, String pass) throws SQLException, InvalidRecordFieldException {
+    @Override
+    public User readDocument(String log, String pass) throws SQLException, InvalidRecordFieldException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

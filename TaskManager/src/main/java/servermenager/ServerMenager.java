@@ -32,23 +32,29 @@ public class ServerMenager {
 
     /**
      * @param args the command line arguments
+     * @throws java.io.IOException
+     * @throws exceptions.InvalidRecordFieldException
+     * @throws org.xml.sax.SAXException
+     * @throws javax.xml.parsers.ParserConfigurationException
+     * @throws java.lang.ClassNotFoundException
+     * @throws java.io.FileNotFoundException
+     * @throws java.sql.SQLException
+     * @throws javax.xml.transform.TransformerException
      */
     public static void main(String[] args) throws IOException, InvalidRecordFieldException, SAXException, ParserConfigurationException, ClassNotFoundException, FileNotFoundException, TransformerException, SQLException {
         // TODO code application logic here
         ServerSocket serverSoket = new ServerSocket(1024);
-
         Socket client = serverSoket.accept();
         System.out.println("Соединение установлено");
-        int countTask = 0;
         Record rec;
         DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-       // Document document = documentBuilder.parse("other.xml");
+        // Document document = documentBuilder.parse("other.xml");
         Loaders load = new Loaders();
-      //  load.setLoaders('X');
-       load.setLoaders('S');//для записи в БД 
+        //  load.setLoaders('X');
+        load.setLoaders('S');//для записи в БД 
         //User u = load.readDocument(document);
-       // LoaderSQL s=new LoaderSQL(); 
-        User u=load.readDocument(null, null);
+        // LoaderSQL s=new LoaderSQL(); 
+        User u = load.readDocument(null, null);
         TaskLog currentTaskLog = u.getTaskLog();
 
         ObjectInputStream in = new ObjectInputStream(client.getInputStream());
@@ -56,10 +62,8 @@ public class ServerMenager {
 
         char cc;
         while (true) {
-
             cc = in.readChar();
             switch (cc) {
-                //GET RECORDS
                 case 'G': {
                     int g = currentTaskLog.getNumberOfRecords();
                     out.writeInt(currentTaskLog.getNumberOfRecords());
@@ -91,25 +95,20 @@ public class ServerMenager {
                     try {
                         currentTaskLog.changeRecord(rec.getId(), rec.getName(), rec.getTimeString(), rec.getDescription(), rec.getContacts());
                         out.writeUTF("OK");
-                    } catch(Exception ex){
+                    } catch (InvalidRecordFieldException | IOException | IndexOutOfBoundsException ex) {
                         out.writeUTF(ex.getMessage());
                     }
                     out.flush();
                     break;
                 }
-
                 case 'W'://write
                 {
                     Document document1 = documentBuilder.parse("Catalog.xml");
                     load.addUser(document1, u);
                     break;
                 }
-
             }
             out.flush();
-
         }
-
     }
-
 }

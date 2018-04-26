@@ -8,7 +8,9 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <link rel="stylesheet" type="text/css" href="notific.css"/>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Ошибка</title>
     </head>
     <body>
         <h1>Что-то пошло не так!</h1>

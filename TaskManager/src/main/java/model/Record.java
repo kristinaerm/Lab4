@@ -37,17 +37,11 @@ public class Record implements Comparable, Serializable {
         if (DataCheck.nameCheck(n)) {
             if (DataCheck.descriptionCheck(d)) {
                 if (DataCheck.contactsCheck(c)) {
-                    
-                        name = n;
-                        description = d;
-                        contacts = c;
-                        
-                            time = DATETIMEFORMATTER.parse(t);
-                       
-                            //time = new Date();
-                        
-                        id = UUID.randomUUID().toString();
-                    
+                    name = n;
+                    description = d;
+                    contacts = c;
+                    time = DATETIMEFORMATTER.parse(t);
+                    id = UUID.randomUUID().toString();
                 } else {
                     throw new InvalidRecordFieldException("Длина поля контактов не должна превышать 15 символов.");
                 }

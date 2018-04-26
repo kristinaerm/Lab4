@@ -27,7 +27,6 @@ public interface Loader {
     public User readDocument(Document document) throws ParserConfigurationException, SAXException, IOException;
 
     public void writeDocument(Document document) throws TransformerConfigurationException, FileNotFoundException, TransformerException;
-     public User readDocument(String log, String pass) throws SQLException, InvalidRecordFieldException;
-     }
 
-
+    public User readDocument(String log, String pass) throws SQLException, InvalidRecordFieldException;
+}

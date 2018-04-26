@@ -1,11 +1,6 @@
-<%@page import="model.NotificationTimerTasks"%>
-<%@page import="java.util.Timer"%>
 <%@page import="model.LoaderSQL"%>
-
-
 <%@page import="java.util.LinkedList"%>
 <%@page import="model.Record"%>
-<%@page import="java.io.Reader"%>
 <%@page errorPage="error.jsp"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
@@ -18,41 +13,38 @@
         <script src="js.js"></script>
         <title>My Task Manager</title>
     </head>
+    
     <body>
+        <%
+            String clock = "";
+            String mess = "";
+            Object[] o = new LoaderSQL().selectTime();
+            long tt = (long) o[0];
+            clock = String.valueOf(tt);
+            Record rec = (Record) o[1];
+            mess = "You need to: "+rec.getName()+".";
+        %>
 
-
-            <%
-                String clock = "0";
-                String mess = "0";
-                if (request.getAttribute("tt") != null) {
-                    out.println("<p>" + request.getAttribute("tt").toString() + "</p>");
-                    clock = request.getAttribute("tt").toString();
-                    mess = request.getAttribute("mes").toString();
-                    out.println("<p>" + clock.toString() + mess.toString()+"</p>");
-                }
-
-            %>
-
-            <script>
+        <script>
             var timeout = <%=clock%>;
-            
+            var m = '<%=mess%>';
+
             function timer()
             {
                 if (--timeout > 0)
                 {
                     window.setTimeout("timer()", 1000);
-                } else
+                } else if (timeout===0)
                 {
-                    alert(timeout.toString());
+                    alert(m);
+                    location.reload();
                 }
             }
-
         </script>
+        
         <form name="mainform" action="taskManager" method="post">
             <h1>Задачи пользователя</h1>
-
             <table id="tasklog"> 
-
                 <tr>
                     <th>№</th>
                     <th>Время</th>
@@ -63,14 +55,10 @@
                     <th> Change</th>
                 </tr>
                 <%
-
-                    LinkedList<Record> r = new LinkedList<>();
-                    r = new LoaderSQL().selectInTableTask();
-                    String submit = request.getParameter("submit");
-                    
-
+                    LinkedList<Record> r = new LoaderSQL().selectInTableTask();
                 %>
-                <%                    for (int i = 0; i < r.size(); i++) {
+                <%                    
+                    for (int i = 0; i < r.size(); i++) {
                 %>
 
 
@@ -107,15 +95,13 @@
                     </table>
                     <button onclick="er()" value="a" name = "submit">Добавить</button>
                 </td>
-
             </table>
-
-
         </form>
+            
         <script>
-
             timer();
-
         </script>
+        
     </body>
+    
 </html>
