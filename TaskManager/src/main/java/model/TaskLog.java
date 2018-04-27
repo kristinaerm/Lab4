@@ -17,15 +17,13 @@ import java.util.UUID;
 public class TaskLog implements Serializable{
 
     private static final String[] COLUMN_NAMES = {"№", "Название", "Время и дата", "Описание", "Контакты"};
-    private LinkedList<Record> records;
+    private final LinkedList<Record> records;
     private final String id;
 
     public TaskLog(LinkedList<Record> rec) {
-
         id = UUID.randomUUID().toString();
         records = rec;
         sort();
-
     }
 
     public String getId() {
@@ -104,7 +102,6 @@ public class TaskLog implements Serializable{
     }
 
     public Record getRecord(int n) {
-
         return records.get(n);
     }
 
@@ -128,8 +125,7 @@ public class TaskLog implements Serializable{
     }
 
     private void sort() {
-        Record temp = null;
-
+        Record temp;
         for (int j = 0; j < records.size(); j++) {
             for (int k = 0; k < records.size() - 1; k++) {
                 if (records.get(k).compareTo(records.get(k + 1)) == 1) {

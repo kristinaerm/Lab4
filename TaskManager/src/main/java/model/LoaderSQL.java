@@ -36,10 +36,6 @@ import java.util.Locale;
  */
 public class LoaderSQL implements Loader {
 
-    private Connection con = null;
-    public static long tttt = 0;
-
-//метод записи в базу данных
     @Override
     public void addUser(Document document, User us) throws FileNotFoundException, TransformerException {
         try {
@@ -49,9 +45,7 @@ public class LoaderSQL implements Loader {
                 addDataInTableTask(us.getTaskLog().getRecord(i).getId(), us.getTaskLog().getRecord(i).getName(), us.getTaskLog().getRecord(i).getTimeString(), us.getTaskLog().getRecord(i).getContacts(), us.getTaskLog().getRecord(i).getDescription());
                 addDataInTableUserTask(us.getId(), us.getTaskLog().getRecord(i).getId());
             }
-        } catch (SQLException ex) {
-            Logger.getLogger(LoaderSQL.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NamingException ex) {
+        } catch (SQLException | NamingException ex) {
             Logger.getLogger(LoaderSQL.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -66,25 +60,15 @@ public class LoaderSQL implements Loader {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    public static void addDataInTableTask(String idTask, String name, String time, String contacts, String description) throws SQLException, NamingException {
-
-        //try {
+    public void addDataInTableTask(String idTask, String name, String time, String contacts, String description) throws SQLException, NamingException {
         Locale.setDefault(Locale.ENGLISH);
 
         Context initContext = new InitialContext();
         Context envContext = (Context) initContext.lookup("java:/comp/env");
         DataSource ds = (DataSource) envContext.lookup("jdbc/TestDB");
-        Connection conn = ds.getConnection();
-        Statement st = conn.createStatement();
-
-        st.executeUpdate("INSERT INTO task (id_task, name_task,description,contacts,time_task) VALUES ('" + idTask + "','" + name + "','" + description + "','" + contacts + "','" + time + "')");
-        st.close();
-        conn.close();
-        /* } catch (Exception ex) {
-            System.out.println(ex.getMessage());
-            Logger.getLogger(LoaderSQL.class.getName()).log(Level.SEVERE, null, ex);
-        }*/
-
+        try (Connection conn = ds.getConnection(); Statement st = conn.createStatement()) {
+            st.executeUpdate("INSERT INTO task (id_task, name_task,description,contacts,time_task) VALUES ('" + idTask + "','" + name + "','" + description + "','" + contacts + "','" + time + "')");
+        }
     }
 
     public void addDataInTableUser(String idUser, String passworduser, String loginuser) throws SQLException {
@@ -94,15 +78,12 @@ public class LoaderSQL implements Loader {
             Context initContext = new InitialContext();
             Context envContext = (Context) initContext.lookup("java:/comp/env");
             DataSource ds = (DataSource) envContext.lookup("jdbc/TestDB");
-            Connection conn = ds.getConnection();
-            //создаем statement для запроса
-            Statement st = conn.createStatement();
-            st.executeUpdate("INSERT INTO users (id_user, login, password) VALUES (" + idUser + ", " + passworduser + "," + loginuser + ")");
-            st.close();
+            try (Connection conn = ds.getConnection(); Statement st = conn.createStatement()) {
+                st.executeUpdate("INSERT INTO users (id_user, login, password) VALUES (" + idUser + ", " + passworduser + "," + loginuser + ")");
+            }
         } catch (NamingException ex) {
             Logger.getLogger(LoaderSQL.class.getName()).log(Level.SEVERE, null, ex);
         }
-        con.close();
     }
 
     public void addDataInTableUserTask(String idUser, String idTask) throws SQLException {
@@ -112,29 +93,26 @@ public class LoaderSQL implements Loader {
             Context initContext = new InitialContext();
             Context envContext = (Context) initContext.lookup("java:/comp/env");
             DataSource ds = (DataSource) envContext.lookup("jdbc/TestDB");
-            Connection conn = ds.getConnection();
-            //создаем statement для запроса
-            Statement st = conn.createStatement();
-            st.executeUpdate("INSERT INTO usertask (id_user,id_task) VALUES (" + idUser + "," + idTask + ")");
-            st.close();
+            try (Connection conn = ds.getConnection(); Statement st = conn.createStatement()) {
+                st.executeUpdate("INSERT INTO usertask (id_user,id_task) VALUES (" + idUser + "," + idTask + ")");
+            }
         } catch (NamingException ex) {
             Logger.getLogger(LoaderSQL.class.getName()).log(Level.SEVERE, null, ex);
         }
-        con.close();
     }
 
     public void deleteDataInTableTask(String idTask) throws SQLException, NamingException {
         Locale.setDefault(Locale.ENGLISH);
-        PreparedStatement st = null;
+
+        PreparedStatement st;
         Context initContext = new InitialContext();
         Context envContext = (Context) initContext.lookup("java:/comp/env");
         DataSource ds = (DataSource) envContext.lookup("jdbc/TestDB");
-        Connection conn = ds.getConnection();
-        st = conn.prepareStatement("DELETE FROM TASK WHERE ID_TASK= '" + idTask + "'");
-        st.executeUpdate();
-        st.close();
-
-        conn.close();
+        try (Connection conn = ds.getConnection()) {
+            st = conn.prepareStatement("DELETE FROM TASK WHERE ID_TASK= '" + idTask + "'");
+            st.executeUpdate();
+            st.close();
+        }
     }
 
     public void deleteDataInTableUser(String idUser) throws SQLException, NamingException {
@@ -142,11 +120,9 @@ public class LoaderSQL implements Loader {
         Context initContext = new InitialContext();
         Context envContext = (Context) initContext.lookup("java:/comp/env");
         DataSource ds = (DataSource) envContext.lookup("jdbc/TestDB");
-        Connection conn = ds.getConnection();
-        Statement st = conn.createStatement();
-        st.executeUpdate("DELETE FROM users WHERE idUser='" + idUser + "'");
-        st.close();
-        conn.close();
+        try (Connection conn = ds.getConnection(); Statement st = conn.createStatement()) {
+            st.executeUpdate("DELETE FROM users WHERE idUser='" + idUser + "'");
+        }
     }
 
     public void deleteDataInTableUserTask(String idUser, String idTask) throws SQLException, NamingException {
@@ -154,53 +130,38 @@ public class LoaderSQL implements Loader {
         Context initContext = new InitialContext();
         Context envContext = (Context) initContext.lookup("java:/comp/env");
         DataSource ds = (DataSource) envContext.lookup("jdbc/TestDB");
-        Connection conn = ds.getConnection();
-        Statement st = conn.createStatement();
-        // st.executeUpdate("DELETE FROM usertask WHERE (idUser = "+idUser+" AND id_task = "+idTask + ")");
-        st.executeUpdate("DELETE FROM TASK WHERE ID_TASK= '" + idTask + "'");
-        st.close();
-
-        conn.close();
+        try (Connection conn = ds.getConnection(); Statement st = conn.createStatement()) {
+            st.executeUpdate("DELETE FROM TASK WHERE ID_TASK= '" + idTask + "'");
+        }
     }
 
     public void changeDataInTableTask(String idTask, String name, String time, String contacts, String description) throws SQLException {
-        Connection conn = null;
-        PreparedStatement st = null;
         try {
             Locale.setDefault(Locale.ENGLISH);
             Context initContext = new InitialContext();
             Context envContext = (Context) initContext.lookup("java:/comp/env");
             DataSource ds = (DataSource) envContext.lookup("jdbc/TestDB");
-            conn = ds.getConnection();
-            st = conn.prepareStatement("UPDATE TASK SET name_task = '" + name + "', description = '" + description + "',contacts = '" + contacts + "',time_task = '" + time + "' WHERE id_task ='" + idTask + "'");
-            st.executeUpdate();
-
-            // Statement st = conn.createStatement();
-            // st.executeUpdate("UPDATE TASK SET name_task = '"+ name + "', description = '" + description + "',contacts = '" + contacts + "',time_task = '" + time + "' WHERE id_task ='" + idTask+"'");
-            st.close();
+            try (Connection conn = ds.getConnection(); PreparedStatement st = conn.prepareStatement("UPDATE TASK SET name_task = '" + name + "', description = '" + description + "',contacts = '" + contacts + "',time_task = '" + time + "' WHERE id_task ='" + idTask + "'")) {
+                st.executeUpdate();
+            }
         } catch (NamingException ex) {
             Logger.getLogger(LoaderSQL.class.getName()).log(Level.SEVERE, null, ex);
         }
-        conn.close();
     }
 
     public void changeDataInTableUser(String idUser, String passworduser, String loginuser) throws SQLException {
-        Connection conn = null;
         try {
             Locale.setDefault(Locale.ENGLISH);
 
             Context initContext = new InitialContext();
             Context envContext = (Context) initContext.lookup("java:/comp/env");
             DataSource ds = (DataSource) envContext.lookup("jdbc/TestDB");
-            conn = ds.getConnection();
-            Statement st = conn.createStatement();
-            st.executeUpdate("UPDATE users SET login = " + loginuser + ", password = " + passworduser + " WHERE idUser = " + idUser);
-            st.close();
+            try (Connection conn = ds.getConnection(); Statement st = conn.createStatement()) {
+                st.executeUpdate("UPDATE users SET login = " + loginuser + ", password = " + passworduser + " WHERE idUser = " + idUser);
+            }
         } catch (NamingException ex) {
             Logger.getLogger(LoaderSQL.class.getName()).log(Level.SEVERE, null, ex);
         }
-        conn.close();
-
     }
 
     public void clearDatabase(User us) throws SQLException, NamingException {
@@ -217,47 +178,31 @@ public class LoaderSQL implements Loader {
     }
 
     public LinkedList<Record> selectInTableTask() throws ParseException {
-        Connection conn = null;
-        ResultSet rs = null;
-        Statement st = null;
         LinkedList<Record> rec = new LinkedList<>();
-        Record r;
         try {
+
+            Record r;
+
             Locale.setDefault(Locale.ENGLISH);
 
             Context initContext = new InitialContext();
             Context envContext = (Context) initContext.lookup("java:/comp/env");
             DataSource ds = (DataSource) envContext.lookup("jdbc/TestDB");
-            conn = ds.getConnection();
-            st = conn.createStatement();
-            rs = st.executeQuery("SELECT*FROM TASK  order by time_task");
-            while (rs.next()) {
-                r = new Record(rs.getString("name_task"), rs.getString("description"), rs.getString("time_task"), rs.getString("contacts"));
-                r.setId(rs.getString("id_task"));
-                rec.add(r);
+            try (Connection conn = ds.getConnection(); Statement st = conn.createStatement()) {
+                ResultSet rs = st.executeQuery("SELECT*FROM TASK  order by time_task");
+                while (rs.next()) {
+                    r = new Record(rs.getString("name_task"), rs.getString("description"), rs.getString("time_task"), rs.getString("contacts"));
+                    r.setId(rs.getString("id_task"));
+                    rec.add(r);
+                }
             }
-
         } catch (NamingException | SQLException | InvalidRecordFieldException ex) {
-            ex.printStackTrace();
             Logger.getLogger(LoaderSQL.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-
-            try {
-                st.close();
-                conn.close();
-            } catch (SQLException ex) {
-                Logger.getLogger(LoaderSQL.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
         }
         return rec;
     }
 
     public Record selectTask(String idTask) throws ParseException {
-        Connection conn = null;
-        ResultSet rs = null;
-        Statement st = null;
-
         Record r = null;
         try {
             Locale.setDefault(Locale.ENGLISH);
@@ -265,84 +210,53 @@ public class LoaderSQL implements Loader {
             Context initContext = new InitialContext();
             Context envContext = (Context) initContext.lookup("java:/comp/env");
             DataSource ds = (DataSource) envContext.lookup("jdbc/TestDB");
-            conn = ds.getConnection();
-            st = conn.createStatement();
-            rs = st.executeQuery("SELECT*FROM TASK WHERE id_task ='" + idTask + "'");
-            while (rs.next()) {
-                r = new Record(rs.getString("name_task"), rs.getString("description"), rs.getString("time_task"), rs.getString("contacts"));
-                r.setId(rs.getString("id_task"));
-
+            try (Connection conn = ds.getConnection(); Statement st = conn.createStatement()) {
+                ResultSet rs = st.executeQuery("SELECT*FROM TASK WHERE id_task ='" + idTask + "'");
+                while (rs.next()) {
+                    r = new Record(rs.getString("name_task"), rs.getString("description"), rs.getString("time_task"), rs.getString("contacts"));
+                    r.setId(rs.getString("id_task"));
+                }
             }
-
         } catch (NamingException | SQLException | InvalidRecordFieldException ex) {
-            System.out.println(ex.getMessage());
             Logger.getLogger(LoaderSQL.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-
-            try {
-                st.close();
-                conn.close();
-            } catch (SQLException ex) {
-                Logger.getLogger(LoaderSQL.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
         }
         return r;
     }
 
     public Object[] selectTime() {
-        Connection conn = null;
-        ResultSet rs = null;
-        Statement st = null;
         long smallesttime = -1;
         Record rec = new Record();
         long curTime;
         long notifTime;
-
+        Object[] o = new Object[2];
         try {
             Locale.setDefault(Locale.ENGLISH);
 
             Context initContext = new InitialContext();
             Context envContext = (Context) initContext.lookup("java:/comp/env");
             DataSource ds = (DataSource) envContext.lookup("jdbc/TestDB");
-            conn = ds.getConnection();
-            st = conn.createStatement();
-            rs = st.executeQuery("SELECT time_task, id_task, description, contacts, name_task FROM TASK order by time_task");
-            while (rs.next()) {
-                curTime = System.currentTimeMillis();
-                SimpleDateFormat DATETIMEFORMATTER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
-                notifTime = DATETIMEFORMATTER.parse(rs.getString("time_task")).getTime();
-                notifTime -= curTime;
-                if ((notifTime > 0)&&(smallesttime<0)) {
-                    smallesttime = notifTime / 1000;
-                    rec.setContacts(rs.getString("contacts"));
-                    rec.setDescription(rs.getString("description"));
-                    rec.setId(rs.getString("id_task"));
-                    rec.setName(rs.getString("name_task"));
-                    rec.setTime(rs.getString("time_task"));
+            try (Connection conn = ds.getConnection(); Statement st = conn.createStatement()) {
+                ResultSet rs = st.executeQuery("SELECT time_task, id_task, description, contacts, name_task FROM TASK order by time_task");
+                while (rs.next()) {
+                    curTime = System.currentTimeMillis();
+                    SimpleDateFormat DATETIMEFORMATTER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
+                    notifTime = DATETIMEFORMATTER.parse(rs.getString("time_task")).getTime();
+                    notifTime -= curTime;
+                    if ((notifTime > 0) && (smallesttime < 0)) {
+                        smallesttime = notifTime / 1000;
+                        rec.setContacts(rs.getString("contacts"));
+                        rec.setDescription(rs.getString("description"));
+                        rec.setId(rs.getString("id_task"));
+                        rec.setName(rs.getString("name_task"));
+                        rec.setTime(rs.getString("time_task"));
+                    }
                 }
-
             }
-
-        } catch (NamingException | SQLException ex) {
-
-            System.out.println(ex.getMessage());
+            o[0] = smallesttime;
+            o[1] = rec;
+        } catch (NamingException | SQLException | ParseException | InvalidRecordFieldException ex) {
             Logger.getLogger(LoaderSQL.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ParseException ex) {
-            Logger.getLogger(LoaderSQL.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InvalidRecordFieldException ex) {
-            Logger.getLogger(LoaderSQL.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            try {
-                st.close();
-                conn.close();
-            } catch (SQLException ex) {
-                Logger.getLogger(LoaderSQL.class.getName()).log(Level.SEVERE, null, ex);
-            }
         }
-        Object[] o = new Object[2];
-        o[0] = smallesttime;
-        o[1] = rec;
         return o;
     }
 }

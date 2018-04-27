@@ -46,9 +46,9 @@ public class Loaders implements Loader {
     public void writeDocument(Document document) throws TransformerConfigurationException, FileNotFoundException, TransformerException {
         loader.writeDocument(document);
     }
-     public User readDocument( String log, String pass) throws SQLException, InvalidRecordFieldException {
-       return  loader.readDocument(log, pass);
-     }
-     }
 
-
+    @Override
+    public User readDocument(String log, String pass) throws SQLException, InvalidRecordFieldException {
+        return loader.readDocument(log, pass);
+    }
+}

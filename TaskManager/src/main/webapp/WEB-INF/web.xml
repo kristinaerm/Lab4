@@ -5,29 +5,9 @@
         <res-ref-name>jdbc/TestDB</res-ref-name>
         <res-type>javax.sql.DataSource</res-type>
         <res-auth>Container</res-auth>
-    </resource-ref>
+    </resource-ref>    
     <servlet>
-        <servlet-name>ServletDelete</servlet-name>
-        <servlet-class>servletView.ServletDelete</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>ServletDelete</servlet-name>
-        <url-pattern>/notif</url-pattern>
-    </servlet-mapping>
-    
-    <servlet>
-         <servlet-name>ServletChange</servlet-name>
-        <servlet-class>servletView.ServletChange</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>ServletChange</servlet-name>
-        <url-pattern>/change</url-pattern>
-        <url-pattern>/p</url-pattern>
-        
-    </servlet-mapping>
-    
-        <servlet>
-         <servlet-name>ServletTaskManager</servlet-name>
+        <servlet-name>ServletTaskManager</servlet-name>
         <servlet-class>servletView.ServletTaskManager</servlet-class>
     </servlet>
     <servlet-mapping>
