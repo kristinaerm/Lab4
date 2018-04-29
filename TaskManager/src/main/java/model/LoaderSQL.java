@@ -28,13 +28,23 @@ import org.xml.sax.SAXException;
 import java.sql.PreparedStatement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
+import org.hibernate.HibernateException;
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
 
 /**
  *
  * @author Кристина
  */
 public class LoaderSQL implements Loader {
+    
+    private SessionFactory sessionFactory = new Configuration().configure().buildSessionFactory();
 
     @Override
     public void addUser(Document document, User us) throws FileNotFoundException, TransformerException {
@@ -42,7 +52,7 @@ public class LoaderSQL implements Loader {
             clearDatabase(us);
             addDataInTableUser(us.getId(), us.getPassword(), us.getLogin());
             for (int i = 0; i < us.getTaskLog().getNumberOfRecords(); i++) {
-                addDataInTableTask(us.getTaskLog().getRecord(i).getId(), us.getTaskLog().getRecord(i).getName(), us.getTaskLog().getRecord(i).getTime(), us.getTaskLog().getRecord(i).getContacts(), us.getTaskLog().getRecord(i).getDescription());
+                addDataInTableTask(us.getTaskLog().getRecord(i).getName(), us.getTaskLog().getRecord(i).getTime(), us.getTaskLog().getRecord(i).getContacts(), us.getTaskLog().getRecord(i).getDescription());
                 addDataInTableUserTask(us.getId(), us.getTaskLog().getRecord(i).getId());
             }
         } catch (SQLException | NamingException ex) {
@@ -60,14 +70,23 @@ public class LoaderSQL implements Loader {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    public void addDataInTableTask(String idTask, String name, String time, String contacts, String description) throws SQLException, NamingException {
-        Locale.setDefault(Locale.ENGLISH);
-
-        Context initContext = new InitialContext();
-        Context envContext = (Context) initContext.lookup("java:/comp/env");
-        DataSource ds = (DataSource) envContext.lookup("jdbc/TestDB");
-        try (Connection conn = ds.getConnection(); Statement st = conn.createStatement()) {
-            st.executeUpdate("INSERT INTO task (id_task, name_task,description,contacts,time_task) VALUES ('" + idTask + "','" + name + "','" + description + "','" + contacts + "','" + time + "')");
+    public void addDataInTableTask(String name, String time, String contacts, String description) throws SQLException, NamingException {
+        Session session = null;
+        Transaction tx = null;
+        try {
+            session = sessionFactory.openSession();
+            tx = session.beginTransaction();
+            Record rec = new Record(name, description, time, contacts);
+            session.save(rec);
+            tx.commit();
+        } catch (InvalidRecordFieldException | ParseException ex) {
+            Logger.getLogger(LoaderSQL.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (HibernateException e) {
+            if (tx != null) {
+                tx.rollback();
+            }
+        } finally {
+            session.close();
         }
     }
 
@@ -86,7 +105,7 @@ public class LoaderSQL implements Loader {
         }
     }
 
-    public void addDataInTableUserTask(String idUser, String idTask) throws SQLException {
+    public void addDataInTableUserTask(String idUser, Integer idTask) throws SQLException {
         try {
             Locale.setDefault(Locale.ENGLISH);
 
@@ -167,8 +186,8 @@ public class LoaderSQL implements Loader {
     public void clearDatabase(User us) throws SQLException, NamingException {
         deleteDataInTableUser(us.getId());
         for (int i = 0; i < us.getTaskLog().getNumberOfRecords(); i++) {
-            deleteDataInTableTask(us.getTaskLog().getRecord(i).getId());
-            deleteDataInTableUserTask(us.getId(), us.getTaskLog().getRecord(i).getId());
+            deleteDataInTableTask(us.getTaskLog().getRecord(i).getId().toString());
+            deleteDataInTableUserTask(us.getId(), us.getTaskLog().getRecord(i).getId().toString());
         }
     }
 
@@ -178,28 +197,16 @@ public class LoaderSQL implements Loader {
     }
 
     public LinkedList<Record> selectInTableTask() throws ParseException {
-        LinkedList<Record> rec = new LinkedList<>();
-        try {
-
-            Record r;
-
-            Locale.setDefault(Locale.ENGLISH);
-
-            Context initContext = new InitialContext();
-            Context envContext = (Context) initContext.lookup("java:/comp/env");
-            DataSource ds = (DataSource) envContext.lookup("jdbc/TestDB");
-            try (Connection conn = ds.getConnection(); Statement st = conn.createStatement()) {
-                ResultSet rs = st.executeQuery("SELECT*FROM TASK  order by time_task");
-                while (rs.next()) {
-                    r = new Record(rs.getString("name_task"), rs.getString("description"), rs.getString("time_task"), rs.getString("contacts"));
-                    r.setId(rs.getString("id_task"));
-                    rec.add(r);
-                }
-            }
-        } catch (NamingException | SQLException | InvalidRecordFieldException ex) {
-            Logger.getLogger(LoaderSQL.class.getName()).log(Level.SEVERE, null, ex);
+        LinkedList<Record> recs = new LinkedList<>();
+        Session session = sessionFactory.openSession();
+        Query query = session.createQuery("from Record");
+        List records = query.list();
+        for (Iterator it = records.iterator(); it.hasNext();) {
+            Record rec = (Record) it.next();
+            recs.add(rec);
         }
-        return rec;
+        session.close();
+        return recs;
     }
 
     public Record selectTask(String idTask) throws ParseException {
@@ -214,7 +221,7 @@ public class LoaderSQL implements Loader {
                 ResultSet rs = st.executeQuery("SELECT*FROM TASK WHERE id_task ='" + idTask + "'");
                 while (rs.next()) {
                     r = new Record(rs.getString("name_task"), rs.getString("description"), rs.getString("time_task"), rs.getString("contacts"));
-                    r.setId(rs.getString("id_task"));
+                    r.setId(Integer.getInteger(rs.getString("id_task")));
                 }
             }
         } catch (NamingException | SQLException | InvalidRecordFieldException ex) {
@@ -223,39 +230,39 @@ public class LoaderSQL implements Loader {
         return r;
     }
 
-    public Object[] selectTime() {
+    public Object[] selectTime() {        
+        Session session = null;
         long smallesttime = -1;
-        Record rec = new Record();
         long curTime;
         long notifTime;
+        Record resultrec = new Record();
         Object[] o = new Object[2];
         try {
-            Locale.setDefault(Locale.ENGLISH);
+            session = sessionFactory.openSession();
+            Query query = session.createQuery("from Record r order by time_task");
+            List records = query.list();
 
-            Context initContext = new InitialContext();
-            Context envContext = (Context) initContext.lookup("java:/comp/env");
-            DataSource ds = (DataSource) envContext.lookup("jdbc/TestDB");
-            try (Connection conn = ds.getConnection(); Statement st = conn.createStatement()) {
-                ResultSet rs = st.executeQuery("SELECT time_task, id_task, description, contacts, name_task FROM TASK order by time_task");
-                while (rs.next()) {
-                    curTime = System.currentTimeMillis();
-                    SimpleDateFormat DATETIMEFORMATTER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
-                    notifTime = DATETIMEFORMATTER.parse(rs.getString("time_task")).getTime();
-                    notifTime -= curTime;
-                    if ((notifTime > 0) && (smallesttime < 0)) {
-                        smallesttime = notifTime / 1000;
-                        rec.setContacts(rs.getString("contacts"));
-                        rec.setDescription(rs.getString("description"));
-                        rec.setId(rs.getString("id_task"));
-                        rec.setName(rs.getString("name_task"));
-                        rec.setTime(rs.getString("time_task"));
-                    }
+            for (Iterator it = records.iterator(); it.hasNext();) {
+                Record rec = (Record) it.next();
+                curTime = System.currentTimeMillis();
+                SimpleDateFormat DATETIMEFORMATTER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
+                notifTime = DATETIMEFORMATTER.parse(rec.getTime()).getTime();
+                notifTime -= curTime;
+                if ((notifTime > 0) && (smallesttime < 0)) {
+                    smallesttime = notifTime / 1000;
+                    resultrec.setContacts(rec.getContacts());
+                    resultrec.setDescription(rec.getDescription());
+                    resultrec.setId(rec.getId());
+                    resultrec.setName(rec.getName());
+                    resultrec.setTime(rec.getTime());
                 }
             }
-            o[0] = smallesttime;
-            o[1] = rec;
-        } catch (NamingException | SQLException | ParseException | InvalidRecordFieldException ex) {
+        } catch (InvalidRecordFieldException | ParseException | HibernateException ex) {
             Logger.getLogger(LoaderSQL.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            session.close();
+            o[0] = smallesttime;
+            o[1] = resultrec;
         }
         return o;
     }

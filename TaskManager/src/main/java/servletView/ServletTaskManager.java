@@ -51,9 +51,9 @@ public class ServletTaskManager extends HttpServlet {
                         i++;
                     }
                     if (i==list.size()){
-                        service.addDataInTableTask(r.getId(), r.getName(), r.getTime(), r.getContacts(), r.getDescription());
+                        service.addDataInTableTask(r.getName(), r.getTime(), r.getContacts(), r.getDescription());
                     }
-                } catch (InvalidRecordFieldException | SQLException | ParseException | NamingException ex) {
+                } catch (InvalidRecordFieldException | ParseException ex) {
                     request.getRequestDispatcher("error.jsp").forward(request, response);
                 }
                 break;

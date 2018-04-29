@@ -84,7 +84,7 @@ public class ServerMenager {
                 //Delete
                 case 'D': {
                     rec = (Record) in.readObject();
-                    String id = rec.getId();
+                    Integer id = rec.getId();
                     currentTaskLog.deleteRecord(id);
                     System.out.println("Задачи удалены!");
                     break;

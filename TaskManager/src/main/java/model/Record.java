@@ -28,7 +28,7 @@ public class Record implements Comparable, Serializable {
     @Id
     @GeneratedValue(generator = "seqPK")
     @Column(name = "id_task")
-    private String id_task;
+    private Integer id_task;
 
     @Column(name = "name_task")
     private String name;
@@ -48,7 +48,6 @@ public class Record implements Comparable, Serializable {
         description = "";
         contacts = "";
         time = DATETIMEFORMATTER.format(System.currentTimeMillis());
-        id_task = UUID.randomUUID().toString();
     }
 
     public Record(String n, String d, String t, String c) throws InvalidRecordFieldException, ParseException {
@@ -60,7 +59,6 @@ public class Record implements Comparable, Serializable {
                     contacts = c;
                     DATETIMEFORMATTER.parse(t);
                     time = t;
-                    id_task = UUID.randomUUID().toString();
                 } else {
                     throw new InvalidRecordFieldException("Длина поля контактов не должна превышать 15 символов.");
                 }
@@ -73,7 +71,7 @@ public class Record implements Comparable, Serializable {
 
     }
 
-    public void setId(String i) {
+    public void setId(Integer i) {
         id_task = i;
     }
 
@@ -110,7 +108,7 @@ public class Record implements Comparable, Serializable {
         }
     }
 
-    public String getId() {
+    public Integer getId() {
         return id_task;
     }
 
