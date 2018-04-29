@@ -65,7 +65,7 @@
                 <tr id=i>
                     <td><%= i + 1%></td>
 
-                    <td><a href=""><%= r.get(i).getTimeString()%></a></td>
+                    <td><a href=""><%= r.get(i).getTime()%></a></td>
                     <td><%= r.get(i).getName()%></td>
                     <td><%= r.get(i).getDescription()%></td>
                     <td><%= r.get(i).getContacts()%></td>

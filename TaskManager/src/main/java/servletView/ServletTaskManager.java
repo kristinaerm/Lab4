@@ -43,15 +43,15 @@ public class ServletTaskManager extends HttpServlet {
                     String tt = request.getParameter("time");
                     String cc = request.getParameter("cont");
                     r = new Record(nn, dd, tt, cc);
-                    DataCheck.timeCheck(r.getTimeString());
+                    DataCheck.timeCheck(r.getTime());
                     LinkedList<Record> list;
                     list = new LoaderSQL().selectInTableTask();
                     int i = 0;
-                    while ((i < list.size())&&(!list.get(i).getName().equals(r.getName()))&&(!list.get(i).getDescription().equals(r.getDescription()))&&(!list.get(i).getContacts().equals(r.getContacts()))&&(!list.get(i).getTimeString().equals(r.getTimeString()))){
+                    while ((i < list.size())&&(!list.get(i).getName().equals(r.getName()))&&(!list.get(i).getDescription().equals(r.getDescription()))&&(!list.get(i).getContacts().equals(r.getContacts()))&&(!list.get(i).getTime().equals(r.getTime()))){
                         i++;
                     }
                     if (i==list.size()){
-                        service.addDataInTableTask(r.getId(), r.getName(), r.getTimeString(), r.getContacts(), r.getDescription());
+                        service.addDataInTableTask(r.getId(), r.getName(), r.getTime(), r.getContacts(), r.getDescription());
                     }
                 } catch (InvalidRecordFieldException | SQLException | ParseException | NamingException ex) {
                     request.getRequestDispatcher("error.jsp").forward(request, response);

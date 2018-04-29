@@ -47,7 +47,7 @@ public class TaskLog implements Serializable{
         for (int i = 0; i < records.size(); i++) {
             data[i][0] = i;
             data[i][1] = this.getRecord(i).getName();
-            data[i][2] = this.getRecord(i).getTimeString();
+            data[i][2] = this.getRecord(i).getTime();
             data[i][3] = this.getRecord(i).getDescription();
             data[i][4] = this.getRecord(i).getContacts();
         }

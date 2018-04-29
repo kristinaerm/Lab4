@@ -42,7 +42,7 @@ public class LoaderSQL implements Loader {
             clearDatabase(us);
             addDataInTableUser(us.getId(), us.getPassword(), us.getLogin());
             for (int i = 0; i < us.getTaskLog().getNumberOfRecords(); i++) {
-                addDataInTableTask(us.getTaskLog().getRecord(i).getId(), us.getTaskLog().getRecord(i).getName(), us.getTaskLog().getRecord(i).getTimeString(), us.getTaskLog().getRecord(i).getContacts(), us.getTaskLog().getRecord(i).getDescription());
+                addDataInTableTask(us.getTaskLog().getRecord(i).getId(), us.getTaskLog().getRecord(i).getName(), us.getTaskLog().getRecord(i).getTime(), us.getTaskLog().getRecord(i).getContacts(), us.getTaskLog().getRecord(i).getDescription());
                 addDataInTableUserTask(us.getId(), us.getTaskLog().getRecord(i).getId());
             }
         } catch (SQLException | NamingException ex) {

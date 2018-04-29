@@ -11,6 +11,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.*;
 
@@ -35,7 +37,7 @@ public class Record implements Comparable, Serializable {
     private String description;
 
     @Column(name = "time_task")
-    private Date time;
+    private String time;
 
     @Column(name = "contacts")
     private String contacts;
@@ -45,7 +47,7 @@ public class Record implements Comparable, Serializable {
         name = "";
         description = "";
         contacts = "";
-        time = new Date();
+        time = DATETIMEFORMATTER.format(System.currentTimeMillis());
         id_task = UUID.randomUUID().toString();
     }
 
@@ -56,7 +58,8 @@ public class Record implements Comparable, Serializable {
                     name = n;
                     description = d;
                     contacts = c;
-                    time = DATETIMEFORMATTER.parse(t);
+                    DATETIMEFORMATTER.parse(t);
+                    time = t;
                     id_task = UUID.randomUUID().toString();
                 } else {
                     throw new InvalidRecordFieldException("Длина поля контактов не должна превышать 15 символов.");
@@ -74,20 +77,13 @@ public class Record implements Comparable, Serializable {
         id_task = i;
     }
 
-    public void setTime(String t) throws InvalidRecordFieldException {
-        if (DataCheck.timeCheck(t)) {
-            try {
-                time = DATETIMEFORMATTER.parse(t);
-            } catch (ParseException e) {
-                time = new Date();
-            }
-        } else {
-            throw new InvalidRecordFieldException("Неправильный формат даты или прошедшее время. дд-мм-гггг чч:мм");
-        }
-    }
-
-    public void setTimeDate(Date d) {
-        time = d;
+    public void setTime(String t) throws InvalidRecordFieldException {            
+        try {
+            DATETIMEFORMATTER.parse(t);
+            time = t;
+        } catch (ParseException ex) {
+            time =DATETIMEFORMATTER.format(System.currentTimeMillis());
+        }            
     }
 
     public void setName(String n) throws InvalidRecordFieldException {
@@ -130,18 +126,20 @@ public class Record implements Comparable, Serializable {
         return contacts;
     }
 
-    public Date getTime() {
+    public String getTime() {
         return time;
-    }
-
-    public String getTimeString() {
-        return DATETIMEFORMATTER.format(time);
     }
 
     @Override
     public int compareTo(Object t) {
         Record r = (Record) t;
-        return time.compareTo(r.getTime());
+        int b=333;
+        try {
+            b = DATETIMEFORMATTER.parse(time).compareTo(DATETIMEFORMATTER.parse(r.getTime()));
+        } catch (ParseException ex) {
+            Logger.getLogger(Record.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return b;
     }
 
 }

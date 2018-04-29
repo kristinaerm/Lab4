@@ -14,6 +14,15 @@
         <servlet-name>ServletTaskManager</servlet-name>
         <url-pattern>/taskManager</url-pattern>
     </servlet-mapping>
+    <servlet>
+         <servlet-name>ServletChange</servlet-name>
+        <servlet-class>servletView.ServletChange</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ServletChange</servlet-name>
+        <url-pattern>/change</url-pattern>
+        <url-pattern>/p</url-pattern>        
+    </servlet-mapping>
     <welcome-file-list>
         <welcome-file>startPage.html</welcome-file>
     </welcome-file-list>

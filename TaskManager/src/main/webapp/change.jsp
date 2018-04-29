@@ -24,16 +24,16 @@
                 Record r = new LoaderSQL().selectTask(s);
             %>
             <p>Дата и время:
-                <input type="text" maxlength="25" size="25"  name="time" id="time" value="<%= r.getTimeString()%>" onblur ="bl_cursor();" onfocus="fc_cursor();"/></p>
+                <input type="text" maxlength="25" size="25"  name="time" id="time" value="<%= r.getTime()%>" onblur ="bl_cursor();" onfocus="fc_cursor();"/></p>
             <p>Название:
                 <input type="text" maxlength="25" size="30"  name="name" id="name" value="<%= r.getName()%>" onblur ="bl_cursor1();" onfocus="fc_cursor1();"/></p>
             <p>Описание:
                 <input type="text" maxlength="30" size="30"  name="desc" id="desc" value="<%= r.getDescription()%>" onblur ="bl_cursor2();" onfocus="fc_cursor2();"/></p>
             <p>Контакты:
                 <input type="text" maxlength="40" size="40"  name="conc" id="conc" value="<%= r.getContacts()%>" onblur ="bl_cursor3();" onfocus="fc_cursor3();"/></p>
-            <h4>
+            <p>
                 <button name = "submit" value="c<%= s%>">Сохранить изменения</button>
-            </h4>
+            </p>
         </form>
     </body>
 </html>

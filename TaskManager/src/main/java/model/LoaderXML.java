@@ -66,7 +66,7 @@ public class LoaderXML implements Loader {
                 timedate.setTextContent("время(дата)оповещения:");
 
                 Element timedate1 = document.createElement("timedate1");
-                timedate1.setTextContent(us.getTaskLog().getRecord(i).getTimeString());
+                timedate1.setTextContent(us.getTaskLog().getRecord(i).getTime());
                 Element contacts = document.createElement("contacts");
                 contacts.setTextContent("Контакты:");
 
