@@ -61,8 +61,7 @@ public class ServletTaskManager extends HttpServlet {
             case 'd':
                 try {
                     String str = request.getParameter("submit").substring(1);
-                    request.setAttribute("d", "d");
-                    service.deleteDataInTableTask(str);
+                    service.deleteDataInTableTask(Integer.valueOf(str));
                 } catch (SQLException | NamingException e) {
                     request.getRequestDispatcher("error.jsp").forward(request, response);
                 }

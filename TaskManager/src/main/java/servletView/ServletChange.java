@@ -5,9 +5,11 @@
  */
 package servletView;
 
+import exceptions.InvalidRecordFieldException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,6 +20,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import model.LoaderSQL;
+import model.Record;
 
 /**
  *
@@ -45,25 +48,18 @@ public class ServletChange extends HttpServlet {
         String conc = req.getParameter("conc");
         String time = req.getParameter("time");
         Locale.setDefault(Locale.ENGLISH);
-        char s = req.getParameter("submit").charAt(0);
-        switch (s) {
-            case 'c':
-                try {
-                    notif.changeDataInTableTask(str1, name, time, conc, desc);
-                } catch (Exception e) {
-                    throw new ServletException("Error during task creation", e);
-                }
-                req.getRequestDispatcher("taskManager.jsp").forward(req, resp);
-                break;
-            case 'd':
-                String id = req.getParameter("submit");
-                 {
-                    try {
-                        notif.deleteDataInTableTask(id);
-                    } catch (SQLException | NamingException ex) {
-                        Logger.getLogger(ServletChange.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
+        try {
+            Record past = notif.selectTask(Integer.parseInt(str1));
+            Record future = new Record();
+            future.setId(Integer.parseInt(str1));
+            future.setName(name);
+            future.setDescription(desc);
+            future.setContacts(conc);
+            future.setTime(time);
+            notif.changeDataInTableTask(past ,future);
+        } catch (InvalidRecordFieldException | NumberFormatException | SQLException | ParseException e) {
+            throw new ServletException("Error during task creation", e);
         }
+        req.getRequestDispatcher("taskManager.jsp").forward(req, resp);
     }
 }

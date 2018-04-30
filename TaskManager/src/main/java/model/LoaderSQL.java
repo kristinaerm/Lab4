@@ -43,7 +43,7 @@ import org.hibernate.cfg.Configuration;
  * @author Кристина
  */
 public class LoaderSQL implements Loader {
-    
+
     private SessionFactory sessionFactory = new Configuration().configure().buildSessionFactory();
 
     @Override
@@ -120,17 +120,23 @@ public class LoaderSQL implements Loader {
         }
     }
 
-    public void deleteDataInTableTask(String idTask) throws SQLException, NamingException {
-        Locale.setDefault(Locale.ENGLISH);
-
-        PreparedStatement st;
-        Context initContext = new InitialContext();
-        Context envContext = (Context) initContext.lookup("java:/comp/env");
-        DataSource ds = (DataSource) envContext.lookup("jdbc/TestDB");
-        try (Connection conn = ds.getConnection()) {
-            st = conn.prepareStatement("DELETE FROM TASK WHERE ID_TASK= '" + idTask + "'");
-            st.executeUpdate();
-            st.close();
+    public void deleteDataInTableTask(int idTask) throws SQLException, NamingException {
+        Session session = null;
+        Transaction tx = null;
+        try {
+            session = sessionFactory.openSession();
+            tx = session.beginTransaction();
+            String hqlUpdate = "delete from Record where id_task = :id";
+            int updatedEntities = session.createQuery(hqlUpdate)
+                    .setString("id", String.valueOf(idTask))
+                    .executeUpdate();
+            tx.commit();
+        } catch (HibernateException e) {
+            if (tx!=null){
+                tx.rollback();
+            }
+        } finally {
+            session.close();
         }
     }
 
@@ -154,17 +160,27 @@ public class LoaderSQL implements Loader {
         }
     }
 
-    public void changeDataInTableTask(String idTask, String name, String time, String contacts, String description) throws SQLException {
+    public void changeDataInTableTask(Record rPast, Record rFuture) throws SQLException {
+        Session session = null;
+        Transaction tx = null;
         try {
-            Locale.setDefault(Locale.ENGLISH);
-            Context initContext = new InitialContext();
-            Context envContext = (Context) initContext.lookup("java:/comp/env");
-            DataSource ds = (DataSource) envContext.lookup("jdbc/TestDB");
-            try (Connection conn = ds.getConnection(); PreparedStatement st = conn.prepareStatement("UPDATE TASK SET name_task = '" + name + "', description = '" + description + "',contacts = '" + contacts + "',time_task = '" + time + "' WHERE id_task ='" + idTask + "'")) {
-                st.executeUpdate();
+            session = sessionFactory.openSession();
+            tx = session.beginTransaction();
+            String hqlUpdate = "update Record set name_task = :name, description = :desc, time_task = :time, contacts = :cont where id_task = :id";
+            int updatedEntities = session.createQuery(hqlUpdate)
+                    .setString("name", rFuture.getName())
+                    .setString("desc", rFuture.getDescription())
+                    .setString("time", rFuture.getTime())
+                    .setString("cont", rFuture.getContacts())
+                    .setString("id", rFuture.getId().toString())
+                    .executeUpdate();
+            tx.commit();
+        } catch (HibernateException e) {
+            if (tx != null) {
+                tx.rollback();
             }
-        } catch (NamingException ex) {
-            Logger.getLogger(LoaderSQL.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            session.close();
         }
     }
 
@@ -186,7 +202,7 @@ public class LoaderSQL implements Loader {
     public void clearDatabase(User us) throws SQLException, NamingException {
         deleteDataInTableUser(us.getId());
         for (int i = 0; i < us.getTaskLog().getNumberOfRecords(); i++) {
-            deleteDataInTableTask(us.getTaskLog().getRecord(i).getId().toString());
+            deleteDataInTableTask(us.getTaskLog().getRecord(i).getId());
             deleteDataInTableUserTask(us.getId(), us.getTaskLog().getRecord(i).getId().toString());
         }
     }
@@ -209,28 +225,19 @@ public class LoaderSQL implements Loader {
         return recs;
     }
 
-    public Record selectTask(String idTask) throws ParseException {
-        Record r = null;
-        try {
-            Locale.setDefault(Locale.ENGLISH);
-
-            Context initContext = new InitialContext();
-            Context envContext = (Context) initContext.lookup("java:/comp/env");
-            DataSource ds = (DataSource) envContext.lookup("jdbc/TestDB");
-            try (Connection conn = ds.getConnection(); Statement st = conn.createStatement()) {
-                ResultSet rs = st.executeQuery("SELECT*FROM TASK WHERE id_task ='" + idTask + "'");
-                while (rs.next()) {
-                    r = new Record(rs.getString("name_task"), rs.getString("description"), rs.getString("time_task"), rs.getString("contacts"));
-                    r.setId(Integer.getInteger(rs.getString("id_task")));
-                }
-            }
-        } catch (NamingException | SQLException | InvalidRecordFieldException ex) {
-            Logger.getLogger(LoaderSQL.class.getName()).log(Level.SEVERE, null, ex);
+    public Record selectTask(int idTask) throws ParseException {
+        LinkedList<Record> recs = selectInTableTask();
+        int i = 0;
+        while ((i < recs.size()) && (!recs.get(i).getId().equals(idTask))) {
+            i++;
         }
-        return r;
+        if (i != recs.size()) {
+            return recs.get(i);
+        }
+        return null;
     }
 
-    public Object[] selectTime() {        
+    public Object[] selectTime() {
         Session session = null;
         long smallesttime = -1;
         long curTime;

@@ -21,7 +21,7 @@
         <form action="change" method="post">
             <%
                 String s = request.getAttribute("id").toString();
-                Record r = new LoaderSQL().selectTask(s);
+                Record r = new LoaderSQL().selectTask(Integer.valueOf(s));
             %>
             <p>Дата и время:
                 <input type="text" maxlength="25" size="25"  name="time" id="time" value="<%= r.getTime()%>" onblur ="bl_cursor();" onfocus="fc_cursor();"/></p>
